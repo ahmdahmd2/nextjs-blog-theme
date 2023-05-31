@@ -19,3 +19,54 @@ workflows:
           version: '16.10'
           # If you are using yarn, change the line below from "npm" to "yarn"
           pkg-manager: npm
+
+import telebot
+import requests
+import json
+
+# GPT-3 API key
+API_KEY = "<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>"
+
+# BotFather token
+BOT_TOKEN = "<@Oday199_bot>"
+
+# Create a new Telegram bot
+bot = telebot.TeleBot(BOT_TOKEN)
+
+# Handle the /start command
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.reply_to(message, 'Hello! I am your GPT-3 bot. I can answer your questions using OpenAI GPT-3. Type /help to get started.')
+
+    # Handle the /help command
+    @bot.message_handler(commands=['help'])
+    def help(message):
+        bot.reply_to(message, 'To use me, just type your question and I will try to answer it using OpenAI GPT-3. Have fun!')
+
+        # Handle all other messages
+        @bot.message_handler(func=lambda message: True)
+        def answer_question(message):
+            # Get the question from the user
+                question = message.text
+
+                    # Make a request to the GPT-3 API
+                        url = 'https://api.openai.com/v1/engines/davinci/completions'
+                            headers = {
+                                    'Content-Type': 'application/json',
+                                            'Authorization': 'Bearer ' + API_KEY
+                                                }
+                                                    data = {
+                                                            'prompt': question,
+                                                                    'max_tokens': 100
+                                                                        }
+                                                                            response = requests.post(url, headers=headers, data=json.dumps(data))
+                                                                                response_json = response.json()
+
+                                                                                    # Get the answer from the response
+                                                                                        answer = response_json['choices'][0]['text']
+
+                                                                                            # Send the answer to the user
+                                                                                                bot.reply_to(message, answer)
+
+                                                                                                # Run the bot
+                                                                                                bot.polling()
